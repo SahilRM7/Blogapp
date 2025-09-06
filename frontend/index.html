@@ -292,11 +292,11 @@
       hideSuccess();
 
       try {
-        const response = await fetch("/generate-blog", {
+        const response = await fetch("https://blogapp-nm54.onrender.com/generate-blog", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt })
-        });
+      });
 
         const data = await response.json();
 
