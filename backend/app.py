@@ -33,6 +33,7 @@ def generate_blog():
 
     resp = requests.post(API_URL, json=payload, headers=headers)
     if resp.status_code != 200:
+        print("API response:", resp.text)
         return jsonify({"error": "Model call failed", "details": resp.text}), 500
 
     data = resp.json()
