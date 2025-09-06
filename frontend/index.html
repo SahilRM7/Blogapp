@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Blog Generator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 800px;
+      padding: 30px;
+      margin: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+      font-size: 2.2rem;
+    }
+    
+    .input-container {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    #promptInput {
+      width: 100%;
+      min-height: 120px;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+    
+    #promptInput:focus {
+      outline: none;
+      border-color: #0078d7;
+    }
+    
+    .char-count {
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      color: #666;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .primary-btn {
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      flex: 1;
+    }
+    
+    .primary-btn:hover {
+      background-color: #0066b8;
+    }
+    
+    .primary-btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    .loading {
+      margin-top: 15px;
+      text-align: center;
+      color: #333;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0078d7;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+      margin-bottom: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+    
+    .secondary-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .secondary-btn:hover {
+      background: #218838;
+    }
+    
+    #wordCount {
+      margin-left: auto;
+      color: #666;
+      font-style: italic;
+    }
+    
+    #blogOutput {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #0078d7;
+    }
+    
+    #blogOutput h2, #blogOutput h3 {
+      margin-top: 20px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    #blogOutput p {
+      margin-bottom: 15px;
+      line-height: 1.6;
+      color: #444;
+    }
+    
+    #blogOutput ul, #blogOutput ol {
+      margin-bottom: 15px;
+      padding-left: 20px;
+    }
+    
+    #blogOutput li {
+      margin-bottom: 5px;
+    }
+    
+    .error {
+      color: #dc3545;
+      padding: 15px;
+      background-color: #f8d7da;
+      border-radius: 8px;
+      margin-top: 20px;
+      border-left: 4px solid #dc3545;
+    }
+    
+    .success {
+      color: #155724;
+      padding: 10px 15px;
+      background-color: #d4edda;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: inline-block;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .fade-in {
+      opacity: 1 !important;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      #controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      #wordCount {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+      
+      .button-container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Blog Generator</h1>
+    
+    <div class="input-container">
+      <textarea id="promptInput" placeholder="Enter your blog topic..."></textarea>
+      <div class="char-count">0 characters</div>
+    </div>
+    
+    <div class="button-container">
+      <button class="primary-btn" onclick="generateBlog()" id="generateBtn">Generate Blog</button>
+    </div>
+
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>Generating blog... please wait</p>
+    </div>
+
+    <div id="controls" style="display:none;">
+      <button class="secondary-btn" onclick="copyBlog()">📋 Copy Blog</button>
+      <button class="secondary-btn" onclick="downloadBlog()">⬇️ Download Blog</button>
+      <p id="wordCount"></p>
+    </div>
+    
+    <div id="successMsg" class="success">Done!</div>
+
+    <div id="blogOutput"></div>
+  </div>
+
+  <script>
+    let currentBlog = "";
+    const promptInput = document.getElementById('promptInput');
+    const charCount = document.querySelector('.char-count');
+    const generateBtn = document.getElementById('generateBtn');
+    const successMsg = document.getElementById('successMsg');
+
+    // Character count for the textarea
+    promptInput.addEventListener('input', function() {
+      const length = this.value.length;
+      charCount.textContent = `${length} characters`;
+      
+      // Disable button if empty
+      generateBtn.disabled = length === 0;
+    });
+
+    async function generateBlog() {
+      const prompt = promptInput.value;
+      const outputDiv = document.getElementById('blogOutput');
+      const loadingDiv = document.getElementById('loading');
+      const controlsDiv = document.getElementById('controls');
+
+      if (!prompt.trim()) {
+        showError(outputDiv, "Please enter a topic!");
+        return;
+      }
+
+      loadingDiv.style.display = "block";
+      controlsDiv.style.display = "none";
+      generateBtn.disabled = true;
+      outputDiv.innerHTML = "";
+      hideSuccess();
+
+      try {
+        const response = await fetch("/generate-blog", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.blog) {
+          currentBlog = data.blog;
+          outputDiv.innerHTML = formatBlog(data.blog);
+
+          // Word count
+          const words = data.blog.trim().split(/\s+/).length;
+          document.getElementById('wordCount').textContent = `Word count: ~${words}`;
+          controlsDiv.style.display = "flex";
+        } else {
+          showError(outputDiv, data.error || "Failed to generate blog");
+        }
+      } catch (err) {
+        showError(outputDiv, "Failed to connect to the server. Please try again later.");
+        console.error("Fetch error:", err);
+      }
+
+      loadingDiv.style.display = "none";
+      generateBtn.disabled = false;
+    }
+
+    function formatBlog(text) {
+      // Convert markdown-style headers to HTML
+      text = text.replace(/^# (.*$)/gim, '<h2>$1</h2>');
+      text = text.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+      text = text.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+      
+      // Convert bold and italic
+      text = text.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+      text = text.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+      
+      // Split into paragraphs and process lists
+      const paragraphs = text.split("\n\n").filter(p => p.trim());
+      return paragraphs.map(p => {
+        if (p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<ol') || p.startsWith('<li')) {
+          return p;
+        }
+        if (p.startsWith('- ') || p.startsWith('* ')) {
+          const items = p.split('\n').map(item => item.replace(/^[-*] /, ''));
+          return '<ul><li>' + items.join('</li><li>') + '</li></ul>';
+        }
+        if (/^\d+\./.test(p)) {
+          const items = p.split('\n').map(item => item.replace(/^\d+\./, ''));
+          return '<ol><li>' + items.join('</li><li>') + '</li></ol>';
+        }
+        return `<p>${p}</p>`;
+      }).join("");
+    }
+
+    function showError(container, message) {
+      container.innerHTML = `<div class="error">${message}</div>`;
+    }
+    
+    function showSuccess() {
+      successMsg.classList.add('fade-in');
+      setTimeout(hideSuccess, 3000);
+    }
+    
+    function hideSuccess() {
+      successMsg.classList.remove('fade-in');
+    }
+
+    async function copyBlog() {
+      try {
+        await navigator.clipboard.writeText(currentBlog);
+        showSuccess();
+      } catch (err) {
+        alert("Failed to copy to clipboard. Please try again.");
+        console.error("Copy error:", err);
+      }
+    }
+
+    function downloadBlog() {
+      const blob = new Blob([currentBlog], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "blog.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showSuccess();
+    }
+  </script>
+</body>
+</html>
