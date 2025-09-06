@@ -4,8 +4,7 @@ import os
 
 app = Flask(__name__, static_folder="../frontend", static_url_path="")
 
-# Use your OpenRouter API key
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 @app.route("/")
