@@ -292,7 +292,7 @@
       hideSuccess();
 
       try {
-        const response = await fetch("https://blogapp-nm54.onrender.com/generate-blog", {
+        const response = await fetch("https://blogapp-nm54.onrender.com", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt })
