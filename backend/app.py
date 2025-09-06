@@ -27,7 +27,7 @@ def generate_blog():
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "deepseek/deepseek-r1:free",  # or deepseek-r1t2-chimera:free
+        "model": "google/gemma-3-27b-it:free",  # or deepseek-r1t2-chimera:free
         "messages": [{"role": "user", "content": full_prompt}]
     }
 
